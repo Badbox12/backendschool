@@ -373,3 +373,17 @@ export const updateAdminStatus = async (
     return { success: false, error: error.message, };
   }
 };
+
+export const promoteAdmin = async(adminId: string) => {
+  try {
+    const admin = await Admin.findById(adminId)
+    if (!admin) return { success: false, error: "Admin not found" };
+    admin.role = "superadmin";
+    await admin.save();
+    return { success: true, data: "Admin promoted to superadmin." };
+  } catch (error : any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export const demoteAdmin = async(adminId: string) => {  }

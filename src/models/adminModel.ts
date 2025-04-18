@@ -45,7 +45,7 @@ const adminSchema: Schema<AdminDocument> = new Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "active", "rejected"],
+      enum: ["pending", "active", "rejected","suspended"],
       default: "pending",
     },
     confirmationToken: { type: String,  },
