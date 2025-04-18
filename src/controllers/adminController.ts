@@ -386,4 +386,47 @@ export const promoteAdmin = async(adminId: string) => {
   }
 }
 
-export const demoteAdmin = async(adminId: string) => {  }
+export const demoteAdmin = async(adminId: string) => { 
+  try {
+    const admin = await Admin.findById(adminId);
+    if (!admin) return { success: false, error: "Admin not found" };
+    // Prevent demoting the last superadmin
+    if(admin.role === "superadmin") {
+      const superadminCount = await Admin.countDocuments({ role: "superadmin" });
+      if (superadminCount <= 1) {
+        return { success: false, error: "Cannot demote the last superadmin." };
+      }
+    }
+    admin.role = "admin";
+    await admin.save();
+    return { success: true, data: "Admin demoted to admin." };
+  } catch (error: any) {
+    return { success: false, error: error.message };   
+  }
+ }
+
+ export const suspendAdmin = async (adminId: string) => {
+  try {
+    const admin = await Admin.findById(adminId);
+    if (!admin) return { success: false, error: "Admin not found" };
+    admin.status = "suspended";
+    await admin.save();
+    return { success: true, data: "Admin suspended." };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+};
+
+export const forceResetAdminPassword = async (adminId: string, newPassword: string) => {
+  try {
+    const admin = await Admin.findById(adminId);
+    if (!admin) return { success: false, error: "Admin not found" };
+    const { hash, salt } = await hashPassword(newPassword);
+    admin.password = hash;
+    admin.salt = salt;
+    await admin.save();
+    return { success: true, data: "Admin password reset successfully." };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}

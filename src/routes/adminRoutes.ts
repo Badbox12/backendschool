@@ -1,4 +1,4 @@
-import { Elysia, t } from "elysia";
+import { Elysia, error, t } from "elysia";
 import {
   createAdmin,
   getAllAdmins,
@@ -11,6 +11,10 @@ import {
   confirmAdmin,
   verifyOtp,
   updateAdminStatus,
+  promoteAdmin,
+  demoteAdmin,
+  suspendAdmin,
+  forceResetAdminPassword,
 } from "../controllers/adminController";
 import { authMiddleware } from "~middlewares/authMiddleware";
 import { authorizeRoles } from "~middlewares/authorizeRoles";
@@ -159,7 +163,6 @@ export default (app: Elysia) => {
         beforeHandle: authMiddleware,
       }
     )
-
     // Delete admin by ID (protected)
     .delete(
       "/admins/:id",
@@ -191,26 +194,77 @@ export default (app: Elysia) => {
       }
     )
     // backend/routes/adminRoutes.ts
-//     .put("/admin/:id/status", async (ctx) => {
-//   const { id } = ctx.params;
-//   const { action, newRole } = ctx.body;
-  
-//   if (!["confirm", "reject"].includes(action)) {
-//     ctx.throw(400, "Invalid action. Use 'confirm' or 'reject'");
-//   }
+    //     .put("/admin/:id/status", async (ctx) => {
+    //   const { id } = ctx.params;
+    //   const { action, newRole } = ctx.body;
 
-//   const result = await updateAdminStatus(
-//     ctx,
-//     id,
-//     action,
-//     newRole
-//   );
-//   return result;
-// }, {
-//   beforeHandle: [authMiddleware, superadminRoleMiddleware], // Requires superadmin role
-//   body: t.Object({
-//     action: t.String({ enum: ["confirm", "reject"] }),
-//     newRole: t.Optional(t.String({ enum: ["admin", "superadmin", "teacher"] })),
-//   }),
-// });
+    //   if (!["confirm", "reject"].includes(action)) {
+    //     ctx.throw(400, "Invalid action. Use 'confirm' or 'reject'");
+    //   }
+
+    //   const result = await updateAdminStatus(
+    //     ctx,
+    //     id,
+    //     action,
+    //     newRole
+    //   );
+    //   return result;
+    // }, {
+    //   beforeHandle: [authMiddleware, superadminRoleMiddleware], // Requires superadmin role
+    //   body: t.Object({
+    //     action: t.String({ enum: ["confirm", "reject"] }),
+    //     newRole: t.Optional(t.String({ enum: ["admin", "superadmin", "teacher"] })),
+    //   }),
+    // });
+    .patch(
+      "/admin/:id/promote",
+      async ({ params, user }: any) => {
+        if (user.role !== "superadmin")
+          return { success: false, error: "Forbbiden" };
+        return await promoteAdmin(params.id);
+      },
+      {
+        params: t.Object({
+          id: t.String(),
+        }),
+        beforeHandle: [authMiddleware, authorizeRoles(["superadmin"])],
+      }
+    )
+    .patch(
+      "/admin/:id/demote",
+      async ({ params, user }: any) => {
+        if (user.role !== "superadmin")
+          return { success: false, error: "Forbidden" };
+        return await demoteAdmin(params.id);
+      },
+      {
+        params: t.Object({ id: t.String() }),
+        beforeHandle: [authMiddleware, authorizeRoles(["superadmin"])],
+      }
+    )
+    .patch(
+      "/admin/:id/suspend",
+      async ({ params, user }: any) => {
+        if (user.role !== "superadmin")
+          return { success: false, error: "Forbidden" };
+        return await suspendAdmin(params.id);
+      },
+      {
+        params: t.Object({ id: t.String() }),
+        beforeHandle: [authMiddleware, authorizeRoles(["superadmin"])],
+      }
+    )
+    .patch(
+      "/admin/:id/reset-password",
+      async ({ params, body, user }: any) => {
+        if (user.role !== "superadmin")
+          return { success: false, error: "Forbidden" };
+        return await forceResetAdminPassword(params.id, body.newPassword);
+      },
+      {
+        params: t.Object({ id: t.String() }),
+        body: t.Object({ newPassword: t.String() }),
+        beforeHandle: [authMiddleware, authorizeRoles(["superadmin"])],
+      }
+    );
 };
