@@ -133,9 +133,9 @@ export default (app: Elysia) => {
     )
     // Get admin by ID (protected)
     .get(
-      "/admin/:id",
+      "/admin/:adminId",
       async ({ params }: any) => {
-        return await getAdminById(params.id);
+        return await getAdminById(params.adminId);
       },
       {
         params: t.Object({
