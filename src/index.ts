@@ -5,12 +5,14 @@ import swagger from "@elysiajs/swagger";
 import { cors } from "@elysiajs/cors";
 import markRoutes from "./routes/markRoutes";
 import adminRoutes from "./routes/adminRoutes";
+import adminLogRoutes from "./routes/adminLogRoutes";
 import jwt from "@elysiajs/jwt";
 import Mark from "./models/markModel";
 import Student from "./models/studentModel";
 import { ApiError } from "./error";
 import { csrfPlugin } from "~middlewares/csrfMiddlware";
 import cookie from "@elysiajs/cookie";
+
 
 connectDB();
 const PORT = process.env.PORT || 4001;
@@ -48,6 +50,7 @@ app.use(
 markRoutes(app);
 studentRoutes(app);
 adminRoutes(app);
+adminLogRoutes(app);
 app.onError(({ code, error }) => {
   const errorMessage =
     typeof error === "object" && "message" in error

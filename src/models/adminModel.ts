@@ -10,6 +10,7 @@ interface AdminDocument extends Document {
   resetPasswordOtp?: string; // Hashed OTP
   resetPasswordExpires?: number; // Expiration timestamp
   resetPasswordToken?: string;
+  lastLogin?: Date; // <-- Add this line
 }
 
 const adminSchema: Schema<AdminDocument> = new Schema(
@@ -52,6 +53,7 @@ const adminSchema: Schema<AdminDocument> = new Schema(
     resetPasswordOtp: { type: String, },
     resetPasswordExpires: { type: Number,  },
     resetPasswordToken: { type: String,  },
+    lastLogin: { type: Date },
   },
   {
     timestamps: true,

@@ -169,7 +169,8 @@ export const loginAdmin = async (
     if (!admin || admin.status !== "active") {
       return { success: false, error: "Invalid credential" };
     }
-
+    admin.lastLogin = new Date();
+    await admin.save();
     // Compare the input password with the stored hash
     const isMatch = await comparePassword(password, admin.salt, admin.password);
     // const test = await debugRehash(password, admin.salt, admin.password).then(() => console.log("Debugging completed"))
@@ -248,6 +249,7 @@ export const createAdmin = async (body: any) => {
 export const getAllAdmins = async () => {
   try {
     const admins = await Admin.find({}, "-password"); // Exclude password
+    
     return { success: true, data: admins };
   } catch (error: any) {
     return { success: false, error: error.message };

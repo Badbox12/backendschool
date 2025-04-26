@@ -99,7 +99,7 @@ export default (app: Elysia) => {
           class: t.Optional(t.String()),
           guardianName: t.Optional(t.String()),
           admin: t.Optional(t.String()),
-          guardianContact: t.String(),
+          guardianContact: t.Optional(t.String()),
         }),
         beforeHandle: authMiddleware,
       }

@@ -1,4 +1,4 @@
-import { Elysia, error, t } from "elysia";
+import { Elysia, t } from "elysia";
 import {
   createAdmin,
   getAllAdmins,
@@ -128,7 +128,7 @@ export default (app: Elysia) => {
         return await getAllAdmins();
       },
       {
-        beforeHandle: authMiddleware,
+        beforeHandle: [authMiddleware, authorizeRoles(["admin", "superadmin"])],
       }
     )
     // Get admin by ID (protected)
@@ -141,7 +141,7 @@ export default (app: Elysia) => {
         params: t.Object({
           id: t.String(),
         }),
-        beforeHandle: authMiddleware,
+        beforeHandle: [authMiddleware, authorizeRoles(["admin", "superadmin"])],
       }
     )
     // Update admin by ID (protected)
