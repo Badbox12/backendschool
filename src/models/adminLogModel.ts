@@ -25,7 +25,8 @@ const adminLogSchema = new Schema<AdminLogDocument>({
   details: {
     type: String,
     maxlength: [1000, "Details cannot exceed 1000 characters"]
-  }
+  },
+  createdAt: { type: Date, default: Date.now, index: { expires: 60 * 60 * 24 * 365 } } // 1 year
 }, {
   timestamps: true,
   strict: "throw", // Prevent unknown fields

@@ -179,13 +179,25 @@ export const loginAdmin = async (
       return { success: false, error: "Invalid email or password" };
     }
 
-    // Generate JWT token using Elysia's JWT plugin
-    // console.log(jwt);
-    const token = await jwt.sign(
-      { id: admin._id, role: admin.role },
-      { expiresIn: "1h" } // Token expires in 1 hour
-    );
-    //console.log("Generated Token : ", token);
+     // Generate JWT token using Elysia's JWT plugin
+     const payload = { id: admin._id, role: admin.role };
+     const expiresIn = "1h";
+    // If superadmin, issue super_token
+    if (admin.role === "superadmin") {
+      const super_token = await jwt.sign(payload, { expiresIn });
+      return {
+        success: true,
+        data: {
+          super_token, // <-- send as super_token
+          email: admin.email,
+          role: admin.role,
+          username: admin.username,
+        },
+      };
+    }
+
+    // Otherwise, issue normal token
+    const token = await jwt.sign(payload, { expiresIn });
     // Return success if authentication is valid
     return {
       success: true,

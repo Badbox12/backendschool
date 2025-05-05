@@ -139,7 +139,7 @@ export default (app: Elysia) => {
       },
       {
         params: t.Object({
-          id: t.String(),
+          adminId: t.String(),
         }),
         beforeHandle: [authMiddleware, authorizeRoles(["admin", "superadmin"])],
       }

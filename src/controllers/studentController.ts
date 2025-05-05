@@ -1,5 +1,6 @@
 import Student from "../models/studentModel";
 import Mark from "../models/markModel";
+import { logAdminActivity } from "../utils/logAdminActivity";
 import { ObjectId } from "mongodb";
 interface StudentData {
   studentId: string;
@@ -35,6 +36,12 @@ export const createStudent = async (
     }
     const newStudent = new Student({ ...body, admin: new  ObjectId(adminId) });
     await newStudent.save();
+     // LOGGING
+     await logAdminActivity(
+      adminId,
+      "Created student",
+      `Created student: ${body.FirstName} ${body.LastName}, studentId: ${body.studentId}`
+    );
     return { success: true, data: newStudent };
   } catch (error: any) {
     console.log({ error: error.message });
@@ -95,6 +102,12 @@ export const editStudentById = async (
     const filter = isObjectId
       ? { _id: new ObjectId(id), admin: adminId }
       : { studentId: id, admin: adminId };
+
+      // Fetch original student before update
+    const originalStudent : any = await Student.findOne(filter);
+    if (!originalStudent) {
+      return { success: false, error: "Student not found or update failed" };
+    }
     // Update the student data
     const updatedStudent = await Student.findByIdAndUpdate(
       filter,
@@ -108,7 +121,24 @@ export const editStudentById = async (
     if (!updatedStudent) {
       return { success: false, error: "Student not found or update failed" };
     }
+
+    // Determine change fields
+    const changes : Record<string, {old : any, new: any}> = {}
+    for (const key of Object.keys(body)) {
+      if (originalStudent[key] !== body[key]) {
+        changes[key] = { old: originalStudent[key], new: body[key] };
+      }
+    }
+       // Only log if there is a change
+       if (Object.keys(changes).length) {
+        await logAdminActivity(
+          adminId,
+          "Edited student",
+          `Edited student ${id}, changes: ${JSON.stringify(changes)}`
+        );
+      }
     // Return the updated student data
+
     return { success: true, data: updatedStudent.toObject() };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -128,6 +158,13 @@ export const deleteStudentById = async (
     if (!deletedStudent) {
       return { success: false, error: "Student not found or delete failed" };
     }
+    // LOGGING
+    await logAdminActivity(
+      adminId,
+      "Deleted student",
+      `Deleted student id: ${id}`
+    );
+
     return { success: true, data: "Student deleted successfully" };
   } catch (error: any) {
     return { success: false, error: error.message };
